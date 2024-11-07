@@ -1,0 +1,5 @@
+__pycache__
+env
+.env
+auth_cloud_indicators.json
+*.csv
