@@ -3,3 +3,4 @@ env
 .env
 auth_cloud_indicators.json
 *.csv
+secrets

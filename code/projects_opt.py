@@ -7,14 +7,10 @@ import pandas_gbq as pdb
 from config import ConfigData
 import re
 
-PATH = './'
-
 project_list = []
 subitems_list = []
 
-# remover as variáveis de ambiente
 config_data = ConfigData()
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["SECURITY_CREDENTIALS"]
     
 def split_data(items, opt, client, project_name, id_project, project_list, subitems_list, current_row_items_list, current_row_subitems_list, current_subitems_values_list):
     for items_values in items['column_values']:
@@ -27,14 +23,12 @@ def split_data(items, opt, client, project_name, id_project, project_list, subit
             subitem_values.append(subitems_values['text'])
         current_subitems_values_list.append([id_project] + [subitems['name']] + subitem_values)
     
-    current_row_subitems_string = ', '.join(map(str, current_row_subitems_list))
-    current_project = [id_project] + [opt] + [client] +[project_name] + current_row_items_list[1:]
+    current_project = [id_project] + [opt] + [client] + [project_name] + current_row_items_list[1:]
     project_list.append(current_project)
     if current_subitems_values_list.__len__() != 0:
         subitems_list.append(current_subitems_values_list)
 
 #Primeira função a ser chamada
-# Ajeitar isso aqui depois 
 def extract_data_api(data,project_list,subitems_list):
     for items in data["data"]["boards"][0]["items_page"]['items']:
         try:
@@ -226,17 +220,12 @@ def format_data(df_project, df_subitems):
         )
 
 def load_data(df_project, df_subitems):
-    df_project.to_csv(f"projects.csv", index=False)
-    df_subitems.to_csv(f"subitems.csv", index=False)
-    
-    
-    # path_table_projects = ".".join([config_data.data_set, config_data.table_name_actual_projects[0]])
-    # path_table_subitems = ".".join([config_data.data_set, config_data.table_name_actual_projects[1]])
+    path_table_projects = ".".join([config_data.data_set, config_data.table_name_actual_projects[0]])
+    path_table_subitems = ".".join([config_data.data_set, config_data.table_name_actual_projects[1]])
 
-    # pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
-    # pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
+    pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
+    pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
     
-
 def projects_opt():
     try:
         begin = time.time()

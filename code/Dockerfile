@@ -1,10 +1,12 @@
 # Use uma imagem base oficial do Python
-FROM python:3.12-slim
+FROM python:3.12
 
 # Defina o diretório de trabalho dentro do container
 WORKDIR /app
 
 # Copie os arquivos de requisitos (se houver) e instale as dependências
+
+RUN apt-get update && apt-get install -y cmake build-essential
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

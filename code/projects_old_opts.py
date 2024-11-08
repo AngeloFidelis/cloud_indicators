@@ -9,9 +9,7 @@ from config import ConfigData
 project_list = []
 subitems_list = []
 
-# remover as variáveis de ambiente
 config_data = ConfigData()
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["SECURITY_CREDENTIALS"]
     
 def split_data(items, opt, client, project_name, id_project, project_list, subitems_list, current_row_items_list, current_row_subitems_set, current_subitems_values_list):
     for items_values in items['column_values']:
@@ -124,6 +122,7 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
         axis=1
     )
     df_subitems['cost'] = pd.to_numeric(df_subitems['cost_per_hour']) * df_subitems['hours']
+    df_subitems["role"] = df_subitems["role"].apply(lambda x: x.split(" - ")[0])
     
     ## ------------------------------ Salvar valores como 'working_days', 'cronograma', 'hours' e 'cost' na tabela 'df_project' ------------------------------
     for i, row_project in df_project.iterrows():
@@ -133,10 +132,8 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
             working_days = pd.to_numeric(matching_subitems['working_days']).dropna().max()
             cronograma = ', '.join([cron for cron in matching_subitems['cronograma'] if cron])
             hours = matching_subitems['hours'].dropna().max() #pegar o valor maximo de horas
-            # hours = round(matching_subitems['hours'].dropna().mean(), 2) #pegar a media
             cost = matching_subitems['cost'].dropna().sum()
             
-            # print(i)
             #o 'at' vai selecionar apenas as linhas cujos ids do df_project correspondam aos ids do df_subitems
             df_project.at[i, 'working_days'] = working_days if working_days else 'N/A'
             df_project.at[i, 'cronograma'] = cronograma.split(',')[0] if cronograma else None
@@ -200,9 +197,6 @@ def format_data(df_project, df_subitems):
         )
 
 def load_data(df_project, df_subitems):
-    df_project.to_csv(f"test.csv", index=False)
-    df_subitems.to_csv(f"test2.csv", index=False)
-    
     
     path_table_projects = ".".join([config_data.data_set, config_data.table_name_old_projects[0]])
     path_table_subitems = ".".join([config_data.data_set, config_data.table_name_old_projects[1]])
@@ -227,7 +221,7 @@ def projects_old_opts():
         df_subitems, df_project = formula_data_null(df_project, df_subitems)
         df_project, df_subitems = split_cronograma(df_project, df_subitems)
         format_data(df_project, df_subitems)
-        # load_data(df_project, df_subitems)
+        load_data(df_project, df_subitems)
         print(df_subitems.dtypes)
         return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"
     except Exception as e:
