@@ -129,8 +129,6 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
         axis=1
     )
     df_subitems['cost'] = pd.to_numeric(df_subitems['cost_per_hour']) * df_subitems['hours']
-    
-    pd.set_option('display.max_rows', None)
     df_subitems["role"] = df_subitems["role"].apply(lambda x: x.split(" - ")[0])
     
     ## ------------------------------ Salvar valores como 'working_days', 'cronograma', 'hours' e 'cost' na tabela 'df_project' ------------------------------
@@ -228,14 +226,6 @@ def format_data(df_project, df_subitems):
 def load_data(df_project, df_subitems):
     df_project.to_csv(f"projects.csv", index=False)
     df_subitems.to_csv(f"subitems.csv", index=False)
-    
-    
-    # path_table_projects = ".".join([config_data.data_set, config_data.table_name_actual_projects[0]])
-    # path_table_subitems = ".".join([config_data.data_set, config_data.table_name_actual_projects[1]])
-
-    # pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
-    # pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
-    
 
 def projects_opt():
     try:

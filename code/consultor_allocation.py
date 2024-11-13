@@ -124,12 +124,6 @@ def modify_type_column(df_consultants,df_allocation):
 def load_data(df_consultants,df_allocation):
     df_consultants.to_csv(f"{PATH}/test3.csv", index=False)
     df_allocation.to_csv(f"{PATH}/test4.csv", index=False)
-    
-    # path_table_consultants = ".".join([config_data.data_set, config_data.table_name_consultants_allocation[0]])
-    # path_table_allocation = ".".join([config_data.data_set, config_data.table_name_consultants_allocation[1]])
-
-    # pdb.to_gbq(df_consultants, path_table_consultants, if_exists='replace')
-    # pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
 
 def consultor_allocation():
     try:

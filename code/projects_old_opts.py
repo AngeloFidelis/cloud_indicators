@@ -124,6 +124,7 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
         axis=1
     )
     df_subitems['cost'] = pd.to_numeric(df_subitems['cost_per_hour']) * df_subitems['hours']
+    df_subitems["role"] = df_subitems["role"].apply(lambda x: x.split(" - ")[0])
     
     ## ------------------------------ Salvar valores como 'working_days', 'cronograma', 'hours' e 'cost' na tabela 'df_project' ------------------------------
     for i, row_project in df_project.iterrows():
@@ -203,13 +204,6 @@ def load_data(df_project, df_subitems):
     df_project.to_csv(f"test.csv", index=False)
     df_subitems.to_csv(f"test2.csv", index=False)
     
-    
-    path_table_projects = ".".join([config_data.data_set, config_data.table_name_old_projects[0]])
-    path_table_subitems = ".".join([config_data.data_set, config_data.table_name_old_projects[1]])
-
-    pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
-    pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
-    
 
 def projects_old_opts():
     try:
@@ -227,7 +221,7 @@ def projects_old_opts():
         df_subitems, df_project = formula_data_null(df_project, df_subitems)
         df_project, df_subitems = split_cronograma(df_project, df_subitems)
         format_data(df_project, df_subitems)
-        # load_data(df_project, df_subitems)
+        load_data(df_project, df_subitems)
         print(df_subitems.dtypes)
         return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"
     except Exception as e:
