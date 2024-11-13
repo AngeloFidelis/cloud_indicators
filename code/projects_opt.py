@@ -5,6 +5,7 @@ import time
 import pandas_gbq as pdb
 # import os
 from config import ConfigData
+import re
 
 PATH = './'
 
@@ -25,9 +26,9 @@ def split_data(items, opt, client, project_name, id_project, project_list, subit
         for subitems_values in subitems['column_values']:
             subitem_values.append(subitems_values['text'])
         current_subitems_values_list.append([id_project] + [subitems['name']] + subitem_values)
-        
+    
     current_row_subitems_string = ', '.join(map(str, current_row_subitems_list))
-    current_project = [id_project] + [opt] + [client] +[project_name] + [current_row_subitems_string] + current_row_items_list[1:]
+    current_project = [id_project] + [opt] + [client] +[project_name] + current_row_items_list[1:]
     project_list.append(current_project)
     if current_subitems_values_list.__len__() != 0:
         subitems_list.append(current_subitems_values_list)
@@ -86,7 +87,6 @@ def create_dataset(project_list,subitems_list,schema_project,schema_subitems):
     subitems_list = [
       items for subitems in subitems_list for items in subitems
     ]
-    print(subitems_list)
     
     df_project = pd.DataFrame(project_list, columns=schema_project)
     df_subitems = pd.DataFrame(subitems_list, columns=schema_subitems)
@@ -130,6 +130,9 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
     )
     df_subitems['cost'] = pd.to_numeric(df_subitems['cost_per_hour']) * df_subitems['hours']
     
+    pd.set_option('display.max_rows', None)
+    df_subitems["role"] = df_subitems["role"].apply(lambda x: x.split(" - ")[0])
+    
     ## ------------------------------ Salvar valores como 'working_days', 'cronograma', 'hours' e 'cost' na tabela 'df_project' ------------------------------
     # Foi feito uma concatenação no 'working_days' dentro da tabela 'df_project'
     # Foi feito uma concatenação no 'cronograma' dentro da tabela 'df_project'
@@ -137,7 +140,7 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
     # Foi feito uma soma agregada em 'cost' dentro da tabela 'df_project'
     
     for i, row_project in df_project.iterrows():
-        matching_subitems = df_subitems[df_subitems['id_project'] == row_project['id_project']]
+        matching_subitems = df_subitems[df_subitems['id_project'] == row_project['id_project']] #trazer dados do row_project que for igual a df_subitens
         if not matching_subitems.empty:
             # working_days = ', '.join(matching_subitems['working_days'].dropna())
             working_days = pd.to_numeric(matching_subitems['working_days']).dropna().max()
@@ -156,12 +159,13 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
     # Lucro = Receita total - custos
     # Margem = Lucro / Receita * 100
     df_project['margin'] = df_project.apply(
-        lambda df: (pd.to_numeric(df['revenue'], errors='coerce') - pd.to_numeric(df['cost'], errors='coerce')) / pd.to_numeric(df['revenue'].replace("0",'1'), errors='coerce') * 100,
+        lambda df: (
+            pd.to_numeric(df['revenue'], errors='coerce') - pd.to_numeric(df['cost'], errors='coerce')) / pd.to_numeric(df['revenue'].replace("0",'1'), errors='coerce'
+        ),
         axis=1
     )
     
     df_subitems = df_subitems.drop("dependência", axis=1)
-    df_project = df_project.drop('subelementos', axis=1)
     
     return df_subitems, df_project
 
@@ -191,7 +195,10 @@ def format_data(df_project, df_subitems):
     df_project["hours"] = pd.to_numeric(df_project["hours"], errors='coerce').fillna(0)
     df_project["revenue"] = pd.to_numeric(df_project["revenue"], errors='coerce').fillna(0)
     df_project["cost"] = pd.to_numeric(df_project["cost"], errors='coerce').fillna(0)
+    df_project["cost"] = df_project["cost"].apply(lambda x: round(x,2))
     df_project["margin"] = pd.to_numeric(df_project["margin"], errors='coerce').fillna(0)
+    df_project["margin"] = df_project["margin"].apply(lambda x: round(x,4))
+    
     df_project["start"] = pd.to_datetime(df_project["start"], errors='coerce', format="%Y-%m-%d")
     df_project["end"] = pd.to_datetime(df_project["end"], errors='coerce', format="%Y-%m-%d")
     df_project["working_days"] = pd.to_numeric(df_project["working_days"], errors='coerce').fillna(0)
@@ -237,6 +244,7 @@ def projects_opt():
         schema_project = ['id_project', 'opt', 'client'] + [
             'project_name' if schema['title'] == 'Name' else schema['title']
             for schema in data["data"]["boards"][0]["columns"]
+            if not re.search(r".*subelementos.*", schema['title'].lower())
         ]
         schema_subitems = ['id_project', 'name', 'Consultor', 'Cronograma', 'Billable', 'Allocation', 'Working Days', 'Hours', 'Cost per Hour', 'Cost', 'Dependência']
 

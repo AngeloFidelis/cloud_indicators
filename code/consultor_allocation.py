@@ -134,7 +134,7 @@ def load_data(df_consultants,df_allocation):
 def consultor_allocation():
     try:
         begin = time.time()
-        data = request_api(config_data.board[1]).json()
+        data = request_api(config_data.board["allocation_consultant"]).json()
         
         schema_consultants = ["id_employee"] + [
             column['title']
@@ -149,6 +149,7 @@ def consultor_allocation():
         df_consultants,df_allocation = rename_coluns_dataset(df_consultants,df_allocation)
         modify_type_column(df_consultants,df_allocation)
         load_data(df_consultants,df_allocation)
+        print(df_consultants)
         return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"
     except Exception as e:
         raise Exception(f"Erro: {e}")

@@ -13,18 +13,18 @@ subitems_list = []
 config_data = ConfigData()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["SECURITY_CREDENTIALS"]
     
-def split_data(items, opt, client, project_name, id_project, project_list, subitems_list, current_row_items_list, current_row_subitems_list, current_subitems_values_list):
+def split_data(items, opt, client, project_name, id_project, project_list, subitems_list, current_row_items_list, current_row_subitems_set, current_subitems_values_list):
     for items_values in items['column_values']:
         current_row_items_list.append(items_values['text'])
     
     for subitems in items["subitems"]:
         subitem_values = []
-        current_row_subitems_list.append(subitems['name'])
+        current_row_subitems_set.add(subitems['name'].split(' - ')[0]) #cria o 'roles_needed'
         for subitems_values in subitems['column_values']:
             subitem_values.append(subitems_values['text'])
         current_subitems_values_list.append([id_project] + [subitems['name']] + subitem_values)
         
-    current_row_subitems_string = ', '.join(map(str, current_row_subitems_list))
+    current_row_subitems_string = ', '.join(map(str, current_row_subitems_set))
     current_project = [id_project] + [opt] + [client] +[project_name] + [current_row_subitems_string] + current_row_items_list[1:]
     project_list.append(current_project)
     if current_subitems_values_list.__len__() != 0:
@@ -33,7 +33,6 @@ def split_data(items, opt, client, project_name, id_project, project_list, subit
 #Primeira função a ser chamada
 # Ajeitar isso aqui depois 
 def extract_data_api(data,project_list,subitems_list):
-    print(data)
     for items in data["data"]["boards"][0]["items_page"]['items']:
         try:
             opt = items["name"][0:8] #Cria uma variável com a OPT do projeto
@@ -41,7 +40,7 @@ def extract_data_api(data,project_list,subitems_list):
             project_name = items['name'].split(' - ')[2] #Cria uma variável com o nome do projeto
             id_project = ''.join([opt.replace("-",''), str(randint(100000,999999))]) # Cria um id para o projeto com base na OPT            
             current_row_items_list = []
-            current_row_subitems_list = []
+            current_row_subitems_set = set() #definido como set para evitar duplicatas
             current_subitems_values_list = []
             
             #divide a lista com dados em uma lista para os projetos e outra lista para os subelementos
@@ -54,7 +53,7 @@ def extract_data_api(data,project_list,subitems_list):
                 project_list,
                 subitems_list,
                 current_row_items_list, 
-                current_row_subitems_list,
+                current_row_subitems_set,
                 current_subitems_values_list
             )
             
@@ -62,7 +61,7 @@ def extract_data_api(data,project_list,subitems_list):
             # print("Other activity") #criar dataset posteriormente
             opt, client, project_name, id_project = "interno", 'AvenueCode', items['name'], str(randint(100000,999999))
             current_row_items_list = []
-            current_row_subitems_list = []
+            current_row_subitems_set = []
             current_subitems_values_list = []
             
             #divide a lista com dados em uma lista para os projetos e outra lista para os subelementos
@@ -75,7 +74,7 @@ def extract_data_api(data,project_list,subitems_list):
                 project_list,
                 subitems_list,
                 current_row_items_list, 
-                current_row_subitems_list,
+                current_row_subitems_set,
                 current_subitems_values_list
             )
 
@@ -109,6 +108,7 @@ def rename_coluns_dataset(df_project,df_subitems):
     df_subitems = df_subitems.rename(columns=replace_coluns_name_subitems)
     
     df_project = df_project.rename(columns={'client': 'customer'})
+    df_project = df_project.rename(columns={'subelementos': 'roles_needed'})
     
     df_subitems = df_subitems.rename(columns={'consultor': 'consultant'})
     df_subitems = df_subitems.rename(columns={'name': 'role'})
@@ -145,11 +145,9 @@ def formula_data_null (df_project, df_subitems): #a api não consegue retornar v
     
     ##  ------------------------------ Formula para calcular a margem ------------------------------
     df_project['margin'] = df_project.apply(
-        lambda df: (pd.to_numeric(df['revenue'], errors='coerce') - pd.to_numeric(df['cost'], errors='coerce')) / pd.to_numeric(df['revenue'].replace("0",'1'), errors='coerce') * 100,
+        lambda df: (pd.to_numeric(df['revenue'], errors='coerce') - pd.to_numeric(df['cost'], errors='coerce')) / pd.to_numeric(df['revenue'].replace("0",'1'), errors='coerce'),
         axis=1
     )
-    
-    df_project = df_project.drop('subelementos', axis=1)
     
     return df_subitems, df_project
 
@@ -171,7 +169,11 @@ def format_data(df_project, df_subitems):
     df_project["hours"] = pd.to_numeric(df_project["hours"], errors='coerce').fillna(0)
     df_project["revenue"] = pd.to_numeric(df_project["revenue"], errors='coerce').fillna(0)
     df_project["cost"] = pd.to_numeric(df_project["cost"], errors='coerce').fillna(0)
+    df_project["cost"] = df_project["cost"].apply(lambda x: round(x,2))
     df_project["margin"] = pd.to_numeric(df_project["margin"], errors='coerce').fillna(0)
+    df_project["margin"] = df_project["margin"].apply(lambda x: round(x,4))
+    df_project["working_days"] = pd.to_numeric(df_project["working_days"], errors='coerce').fillna(0)
+    
     df_project["start"] = pd.to_datetime(df_project["start"], errors='coerce', format="%Y-%m-%d")
     df_project["end"] = pd.to_datetime(df_project["end"], errors='coerce', format="%Y-%m-%d")
 
@@ -198,16 +200,15 @@ def format_data(df_project, df_subitems):
         )
 
 def load_data(df_project, df_subitems):
-    print('teste')
     df_project.to_csv(f"test.csv", index=False)
     df_subitems.to_csv(f"test2.csv", index=False)
     
     
-    # path_table_projects = ".".join([config_data.data_set, config_data.table_name_old_projects[0]])
-    # path_table_subitems = ".".join([config_data.data_set, config_data.table_name_old_projects[1]])
+    path_table_projects = ".".join([config_data.data_set, config_data.table_name_old_projects[0]])
+    path_table_subitems = ".".join([config_data.data_set, config_data.table_name_old_projects[1]])
 
-    # pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
-    # pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
+    pdb.to_gbq(df_project, path_table_projects, if_exists='replace')
+    pdb.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
     
 
 def projects_old_opts():
@@ -226,7 +227,8 @@ def projects_old_opts():
         df_subitems, df_project = formula_data_null(df_project, df_subitems)
         df_project, df_subitems = split_cronograma(df_project, df_subitems)
         format_data(df_project, df_subitems)
-        load_data(df_project, df_subitems)
+        # load_data(df_project, df_subitems)
+        print(df_subitems.dtypes)
         return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"
     except Exception as e:
         raise Exception(f"Erro: {e}")
