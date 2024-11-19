@@ -9,6 +9,17 @@ Atualmente, o ETL realiza a migração dos seguintes painéis do Monday:
 
 ## Arquitetura de solução
 
+<img src="./img/Arc/integration_monday.png"/>
+
+1. A requisição para o Cloud Run é feita por meio da URL disponibilizada pelo serviço. Essa requisição pode ser realizada via navegador web, ferramentas como Postman ou utilizando o comando **curl** na linha de comando.
+   - O Cloud Run é um serviço que executa aplicações contêinerizadas em Docker. O contêiner é armazenado no Artifact Registry e consumido diretamente pelo Cloud Run. Nesse caso, um Contêiner Docker rodando uma aplicação Python
+2. Após ser acionado, o Cloud Run realiza uma requisição ao Cloud Secret Manager para obter o **api_key**, que contém o <span style="color: #FFB800;">Token de API</span>.
+3. O Cloud Run, com o Token de API em mãos, faz uma requisição à API do Monday. Essa requisição utiliza o formato GraphQL para estruturar os dados.
+4. Depois de validar a requisição, a API do Monday retorna uma resposta no formato JSON contendo os dados solicitados pelo Cloud Run.
+5. O Cloud Run processa e transforma os dados extraídos e os armazena em tabelas no dataset **cloud_indicators** no BigQuery. Algumas dessas tabelas são posteriormente utilizadas para criar as <span style="color: #FFB800;">views</span>.
+6. Os dados salvos no BigQuery são consumidos pelo Looker Studio, permitindo a criação de dashboards interativos e dinâmicos.
+7. Os dashboards criados podem ser acessados pelo time de gestão, encerrando o ciclo do processo.
+
 ## Mapeamento
 
 O **monday** é uma plataforma de gestão de trabalho e colaboração que ajuda equipes a planejar, organizar e acompanhar projetos. Ele oferece ferramentas para criar fluxos de trabalho personalizados, como quadros, listas de tarefas e painéis, onde você pode visualizar o progresso de atividades, delegar responsabilidades e monitorar prazos.
@@ -17,7 +28,7 @@ Para este projeto, os dados foram extraídos através da API do monday, que util
 - **Autenticação**: primeiro, é necessário obter o token de API do monday. Para isso, acesse a aba de <span style="color: #FFB800;">Developer</span> e depois em <span style="color: #FFB800;">My Access Token</span>.
   - <span style="color: #E74C3C;">IMPORTANTE</span>: o Token de API é um dado <span style="color: #FFB800;">extremamente sensível</span>, e deve ser manuseado com cuidado. 
 - **Requisição**: a API do monday utiliza o GraphQL, o que exige a definição de uma Query GraphQL, especificando exatamente os dados que deseja obter (como painéis, colunas, itens, etc.).
-- **Chamada à API**: com a Query e o Token, você pode realizar a chamada <span style="color: #FFB800;">HTTP POST</span> para o endpoint da API "https://api.monday.com/v2" (consultar a documentação da API para maiores especificações de versão).
+- **Chamada à API**: com a Query e o Token, você pode realizar a chamada <span style="color: #FFB800;">HTTP POST</span> para o endpoint da API https://api.monday.com/v2 (consultar a documentação da API para maiores especificações de versão).
   - É necessário enviar o token da API no cabeçalho da requisição, utilizando, por exemplo: <span style="color: #FFB800;">Authorization: Bearer SEU_TOKEN</span>.
 - **Manipulação de Respostas**: a resposta vem em JSON, com a estrutura exata que você solicitou na Query GraphQL. Em Python, por exemplo, foi utilizada a biblioteca <span style="color: #FFB800;">requests</span> para fazer a requisição e manipular o JSON com facilidade.
 
@@ -93,6 +104,8 @@ query GetBoardItems($boardId: [ID!]){
 }
 ```
 
+<img src="./img/docs/postman.png"/>
+
 O resultado virá em um formato JSON extenso, com várias linhas de dados, começando pelos nomes das colunas, e após os dados referente a cada coluna
 
 ### Dados nulos na resposta da requisição
@@ -112,7 +125,7 @@ Primeiro, vamos criar um ambiente virtual para trabalhar em um ambiente isolado.
 python3 -m venv etl_process
 ```
 
-Esse comando cria um ambiente virtual chamado etl_process. Para ativá-lo, execute o comando abaixo no terminal (no mesmo local onde o ambiente foi criado):
+Esse comando cria um ambiente virtual chamado **etl_process**. Para ativá-lo, execute o comando abaixo no terminal (no mesmo local onde o ambiente foi criado):
 
 ```sh
 source etl_process/bin/activate
@@ -127,7 +140,7 @@ Com o ambiente virtual ativo, vamos instalar as seguintes bibliotecas:
 - **dotenv**: para trabalhar com variáveis de ambiente.
 - **Google Cloud Secret Manager**: para acessar segredos no Secret Manager da GCP.
 
-Vamos executar o seguinte comando:
+Para a instalação, vamos executar o seguinte comando ustilizando a utilitário python chamado **pip**:
 
 ```sh
 pip3 install pandas pandas-gbq Flask requests python-dotenv google-cloud-secret-manager
@@ -138,7 +151,7 @@ Para salvar essas dependências (principalmente para quando a aplicação for se
 pip3 freeze > requirements.txt
 ```
 
-Esse comando vai criar um arquivo chamado **requirements.txt** com os nomes e suas respectivas versões de cada dependência instalada
+Esse comando vai criar um arquivo chamado **requirements.txt** com os nomes e suas respectivas versões de cada dependência instalada dentro do <span style="color: #E74C3C;">ambiente virtual</span>
 
 ### Criação da Service Account
 
@@ -198,6 +211,10 @@ O processo de execução segue as etapas abaixo:
 3. Os arquivos de ETL chamam o **request_api.py**, que realiza a requisição para a API do Monday.
 4. Antes de fazer a requisição, request_api.py utiliza **secret.py** para obter o token de API do Secret Manager.
 5. Todos os arquivos fazem uso das configurações definidas em **config.py**.
+
+### Tratamento de dados nulos da API
+Como falado anteriormente, a API não retorna dados de **colunas dinâmicas**, como aquelas que contêm fórmulas ou medidores de progresso. Em nosso projeto, são eles:
+- Cost (tabela de projetos antigos e atuais)
 
 ### Processo de autenticação entre o ambiente local e o ambiente GCP
 
