@@ -6,9 +6,6 @@ import os
 import logging
 logging.basicConfig(level=logging.INFO)
 
-
-
-
 app = Flask(__name__)
 app.secret_key = os.urandom(12)
 app.folder_static = "static"

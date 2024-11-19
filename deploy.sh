@@ -9,12 +9,13 @@ gcloud artifacts repositories create monday \
 gcloud auth configure-docker us-central1-docker.pkg.dev
 
 
-
 docker build -t us-central1-docker.pkg.dev/lookerstudylab/monday/export-monday:v1 .
 docker push us-central1-docker.pkg.dev/lookerstudylab/monday/export-monday:v1
 
 gcloud run deploy export-app \
   --image us-central1-docker.pkg.dev/lookerstudylab/monday/export-monday:v1 \
   --region us-central1 \
+  --service-account=access-cloud-run@lookerstudylab.iam.gserviceaccount.com \
   --platform managed \
   --allow-unauthenticated
+  
