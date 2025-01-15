@@ -1,0 +1,66 @@
+/* Define o fundo branco e centraliza o conteúdo */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f8f8;
+    margin: 0;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* Container principal para centralizar o conteúdo */
+.container {
+    background-color: #fff;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* Estilo para o título e subtítulo */
+header h2 {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+}
+
+header p {
+    font-size: 16px;
+    color: #666;
+    margin: 10px 0 20px;
+}
+
+/* Estilo do formulário para alinhar os botões verticalmente */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Estilo dos botões com largura uniforme */
+.form a button {
+    padding: 15px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 100%;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.form a button:hover {
+    background-color: #45a049;
+}
+
+/* Centralização e estilo da imagem */
+footer img {
+    width: 100px;
+    margin-top: 20px;
+}
