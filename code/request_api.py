@@ -6,8 +6,8 @@ config_data = ConfigData() # Cria uma instância da classe 'ConfigData' que carr
 request_key = secrets(config_data.project_id) #Chama a função 'secrets' passando o 'project_id' da configuração.
 api_key = request_key('api_key', 'latest') # Obtém o nome do 'secret' para a api_key
 headers = {"Authorization" : api_key}
-# data_limit = config_data.limit_data
-data_limit = 20
+data_limit = config_data.limit_data
+# data_limit = 20
 
 def get_items_board(board,limit):
     query = """ 
@@ -112,26 +112,26 @@ def request_api(board):
     
     print(data_len)
     # quando o cursor for nulo, quer dizer que não há mais dados para paginar, fazendo o loop terminar
-    # if cursor is not None:
-    #     pagination.append(response_data["data"]["boards"][0]["items_page"]["items"])
-    #     while cursor is not None:
-    #         data_pagination = next_page(board, cursor,data_limit)
-    #         response_data_pagination = requests.post(url=config_data.api_url, json=data_pagination, headers=headers).json()
-    #         pagination.append(response_data_pagination['data']['next_items_page']['items'])
-    #         cursor = response_data_pagination['data']['next_items_page']['cursor']
-    #         data_len = response_data_pagination["data"]["next_items_page"]["items"].__len__()
-    #         print(data_len)
-    #     #Selecione o item de cada items dentro da paginação de cada item para cada items
-    #     all_data = [
-    #         item
-    #         for items
-    #         in pagination
-    #         for item
-    #         in items
-    #     ]
-    #     return all_data, schema_projects
-    # else:
-    return response_data["data"]["boards"][0]["items_page"]["items"], schema_projects
+    if cursor is not None:
+        pagination.append(response_data["data"]["boards"][0]["items_page"]["items"])
+        while cursor is not None:
+            data_pagination = next_page(board, cursor,data_limit)
+            response_data_pagination = requests.post(url=config_data.api_url, json=data_pagination, headers=headers).json()
+            pagination.append(response_data_pagination['data']['next_items_page']['items'])
+            cursor = response_data_pagination['data']['next_items_page']['cursor']
+            data_len = response_data_pagination["data"]["next_items_page"]["items"].__len__()
+            print(data_len)
+        #Selecione o item de cada items dentro da paginação de cada item para cada items
+        all_data = [
+            item
+            for items
+            in pagination
+            for item
+            in items
+        ]
+        return all_data, schema_projects
+    else:
+        return response_data["data"]["boards"][0]["items_page"]["items"], schema_projects
     # return response_data,schema_projects
     
     

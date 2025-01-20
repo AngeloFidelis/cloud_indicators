@@ -6,20 +6,20 @@ project_list = []
 subitems_list = []
 
 def load_data(df_project, df_subitems):
-    df_project.to_csv(f"./load_test/df_projects_old.csv", index=False)
-    df_subitems.to_csv(f"./load_test/df_subitems_old.csv", index=False)
+    df_project.to_csv(f"./load_test/df_projects_actual.csv", index=False)
+    df_subitems.to_csv(f"./load_test/df_subitems_actual.csv", index=False)
 
-def old_projects():
+def actual_projects():
     begin = time.time()
-    board_id = config_data.boards_id["old_projects"]
+    board_id = config_data.boards_id["actual_projects"]
     data, schema_projects = request_api(board_id)
     new_schema_project = ['id_project', 'opt', 'client'] + [
-        'project_name' if header == 'Name' else header and 'US$ Monthly consumption' if header == 'US$ Monthly consuption' else header
+        'project_name' if header == 'Name' else header
         for header in schema_projects
         if header != "Subelementos"
     ]
     
-    schema_subitems = ['id_project', 'name', 'Consultor', 'Cronograma', 'Billable', 'Allocation', 'Working Days', 'Hours', 'Cost per Hour', 'Cost']
+    schema_subitems = ['id_project', 'name', 'Consultor', 'Cronograma', 'Billable', 'Allocation', 'Working Days', 'Hours', 'Cost per Hour', 'Cost', 'dependence']
     
     create_table(data, project_list, subitems_list)
     df_project,df_subitems = create_dataset(project_list, subitems_list, new_schema_project, schema_subitems)

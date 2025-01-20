@@ -27,11 +27,7 @@ print(opt)
 print(Client)
 print(Project_name)
 
-cronograma.append(
-        [
-            cron.split(' - ')
-            for cron 
-            in matching_idproject['cronograma'] 
-            if cron
-        ]
-    )
+
+
+test = re.match('#', test5)
+print(test)

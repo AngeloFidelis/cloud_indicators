@@ -4,6 +4,7 @@ import logging
 import boards
 from datetime import date
 from old_projects import old_projects
+from actual_projects import actual_projects
 
 current_year = date.today().year #Pega o ano atual
 logging.basicConfig(level=logging.INFO) # Registra os logs acima do INFO (como warning ou error)
@@ -20,10 +21,16 @@ def catch_board_ids(board):
 def index():
     return render_template("home/index.html") #Renderiza a página home
   
-#Rota para pegar todos os dados dos consultores 
+#Rota para pegar todos os dados dos projetos antigos
 @app.route('/projetos_historicos', methods=["POST", "GET"])
 def projetos_historicos():
     old_projects()
+    return redirect(url_for("index"))
+  
+#Rota para pegar todos os dados dos novos projetos
+@app.route('/projetos_atuais', methods=["POST", "GET"])
+def projetos_atuais():
+    actual_projects()
     return redirect(url_for("index"))
 
 #Executa a aplicação na porta 8080 com acesso a toda a Internet
