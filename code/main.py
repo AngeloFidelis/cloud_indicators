@@ -1,10 +1,11 @@
 from flask import Flask, request, render_template, redirect, url_for, flash, session
 import os
 import logging
-import boards
 from datetime import date
 from old_projects import old_projects
-from actual_projects import actual_projects
+from area_consultants import area_consultants
+from current_projects import current_projects
+from consultant_allocation import consultant_allocation
 
 current_year = date.today().year #Pega o ano atual
 logging.basicConfig(level=logging.INFO) # Registra os logs acima do INFO (como warning ou error)
@@ -22,16 +23,23 @@ def index():
     return render_template("home/index.html") #Renderiza a página home
   
 #Rota para pegar todos os dados dos projetos antigos
-@app.route('/projetos_historicos', methods=["POST", "GET"])
-def projetos_historicos():
+@app.route('/old_projects', methods=["POST", "GET"])
+def old_projects_function():
     old_projects()
     return redirect(url_for("index"))
   
 #Rota para pegar todos os dados dos novos projetos
-@app.route('/projetos_atuais', methods=["POST", "GET"])
-def projetos_atuais():
-    actual_projects()
+@app.route('/current_projects', methods=["POST", "GET"])
+def current_projects_function():
+    current_projects()
     return redirect(url_for("index"))
+  
+@app.route('/consultant_allocation', methods=["POST", "GET"])
+def consultant_allocation_function():
+    df_area_consultants = area_consultants()
+    consultant_allocation(df_area_consultants)
+    return redirect(url_for("index"))
+
 
 #Executa a aplicação na porta 8080 com acesso a toda a Internet
 if __name__ == "__main__":

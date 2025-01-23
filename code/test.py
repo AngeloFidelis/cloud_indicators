@@ -1,3 +1,4 @@
+import pandas as pd
 import hashlib
 import re
 
@@ -23,11 +24,32 @@ test5 = 'OPT-0349 - Tembici - #3 - IOT Platform (SVET) - Março'
 opt = test5.split(' - ')[0]
 Client = test5.split(' - ')[1]
 Project_name = ' - '.join(test5.split(' - ')[2:])
-print(opt)
-print(Client)
-print(Project_name)
+# print(opt)
+# print(Client)
+# print(Project_name)
 
+dataframe_test = {
+    "id": [123,456,123,678],
+    'name': ['Angelo', 'Pedro', 'angelo', 'Joao']
+}
 
+dataframe = pd.DataFrame(dataframe_test)
+dataframe = dataframe.drop_duplicates('id')
 
-test = re.match('#', test5)
-print(test)
+dataframe_test2 = [
+    ['valor11', 'valor12', 'valor13'],
+    ['valor21', 'valor22', 'valor23'],
+    ['valor13', 'valor32', 'valor33']
+]
+dataframe_test3 = [
+    ['valor113', 'valor12', 'valor13'],
+    ['valor21', 'valor22'],
+    ['valor133', 'valor32', 'valor33']
+]
+
+dataframe_concat = dataframe_test2 + dataframe_test3
+schema_test = ['schema1','schema2','schema3']
+
+dataframe2 = pd.DataFrame(dataframe_concat, columns=schema_test)
+dataframe2 = dataframe2.drop_duplicates('schema1')
+print(dataframe2)

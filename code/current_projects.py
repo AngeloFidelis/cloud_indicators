@@ -1,4 +1,4 @@
-from request_api import request_api
+from request_api import request_projects
 import time
 from transform_data import config_data, create_table, create_dataset, rename_coluns_dataset, fill_null_data_formula, split_cronograma, format_data
 
@@ -9,10 +9,10 @@ def load_data(df_project, df_subitems):
     df_project.to_csv(f"./load_test/df_projects_actual.csv", index=False)
     df_subitems.to_csv(f"./load_test/df_subitems_actual.csv", index=False)
 
-def actual_projects():
+def current_projects():
     begin = time.time()
-    board_id = config_data.boards_id["actual_projects"]
-    data, schema_projects = request_api(board_id)
+    board_id = config_data.boards_id["current_projects"]
+    data, schema_projects = request_projects(board_id)
     new_schema_project = ['id_project', 'opt', 'client'] + [
         'project_name' if header == 'Name' else header
         for header in schema_projects

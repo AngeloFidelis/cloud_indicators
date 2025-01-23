@@ -7,7 +7,7 @@ request_key = secrets(config_data.project_id) #Chama a função 'secrets' passan
 api_key = request_key('api_key', 'latest') # Obtém o nome do 'secret' para a api_key
 headers = {"Authorization" : api_key}
 data_limit = config_data.limit_data
-# data_limit = 20
+# data_limit = 5
 
 def get_items_board(board,limit):
     query = """ 
@@ -97,7 +97,12 @@ def next_page(board, cursor,limit):
     data = {'query': query, 'variables': variables}
     return data
 
-def request_api(board):
+def request(board):
+    data = get_items_board(board,data_limit)#pega todos os itens
+    response_data = requests.post(url=config_data.api_url, json=data, headers=headers).json()
+    return response_data
+
+def request_projects(board):
     data = get_items_board(board,data_limit)#pega todos os itens
     response_data = requests.post(url=config_data.api_url, json=data, headers=headers).json()#transforma esses dados em json
     data_len = response_data["data"]["boards"][0]["items_page"]["items"].__len__()
@@ -117,6 +122,7 @@ def request_api(board):
         while cursor is not None:
             data_pagination = next_page(board, cursor,data_limit)
             response_data_pagination = requests.post(url=config_data.api_url, json=data_pagination, headers=headers).json()
+            print(response_data_pagination)
             pagination.append(response_data_pagination['data']['next_items_page']['items'])
             cursor = response_data_pagination['data']['next_items_page']['cursor']
             data_len = response_data_pagination["data"]["next_items_page"]["items"].__len__()
@@ -133,5 +139,26 @@ def request_api(board):
     else:
         return response_data["data"]["boards"][0]["items_page"]["items"], schema_projects
     # return response_data,schema_projects
+    
+def request_consultants(board):
+    all_data = [] #Variável que será usando para fazer um append nos dados de consultores de todos os boards
+    for key, values in board.items():
+        if key == 'current_year':
+            response_data = request(values)
+            schema_projects = [
+                items["title"]
+                for items
+                in response_data['data']['boards'][0]['columns']
+            ]
+            data = response_data["data"]["boards"][0]["items_page"]["items"]
+            for item in data: #impede que os dados sejam armazenados como uma lista dentro de outra lista
+                all_data.append(item)
+        else:
+            for value in values:
+                response_data = request(value)
+                data = response_data["data"]["boards"][0]["items_page"]["items"]
+                for item in data: #impede que os dados sejam armazenados como uma lista dentro de outra lista
+                    all_data.append(item)
+    return schema_projects, all_data
     
     
