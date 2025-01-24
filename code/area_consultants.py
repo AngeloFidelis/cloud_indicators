@@ -13,8 +13,8 @@ api_sheet = request_key(config_data.service_account, config_data.version)
 api_sheet = json.loads(api_sheet)
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-SAMPLE_SPREADSHEET_ID = "1Ad3OMrTJnkoulvRORS2yFNEBzPeUUjpTXGkXGSaiaOU"
-SAMPLE_RANGE_NAME = "alocação consultor!A2:O300"
+SAMPLE_SPREADSHEET_ID = config_data.spreadsheet_id
+SAMPLE_RANGE_NAME = config_data.range_name
 
 # pd.set_option('display.max_rows', None)
 

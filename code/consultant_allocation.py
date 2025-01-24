@@ -120,8 +120,6 @@ def modify_type_column(df_consultants,df_allocation):
         df_allocation[coluns] = df_allocation[coluns].map(
             lambda x: str(x) if x not in [None, '', ' '] else 'N/A'
         )
-        
-    print(df_allocation.dtypes)
 
 def load_Data(df_consultants, df_allocation):
     df_consultants.to_csv('./load_test/consultants.csv', index=False)

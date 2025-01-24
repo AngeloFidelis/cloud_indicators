@@ -20,6 +20,8 @@ class DataProject:
         self.regex_actual_board = os.environ['DATA_SET']
         self.regex_consultant = os.environ['REGEX_CONSULTANT']
         self.regex_not_in_board = os.environ['REGEX_NOT_IN_BOARD']
+        self.spreadsheet_id = os.environ['SAMPLE_SPREADSHEET_ID']
+        self.range_name = os.environ['SAMPLE_RANGE_NAME']
 
 class DataMonday(DataProject):
     def __init__(self):

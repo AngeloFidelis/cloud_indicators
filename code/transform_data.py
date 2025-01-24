@@ -105,7 +105,6 @@ def fill_null_data_formula(df_project, df_subitems):
                 df_project.at[i,'start'] = df_project.at[i,"start"] if df_project.at[i,"start"] not in [None, "", " ", np.nan] else start_project 
                 df_project.at[i,'end'] = df_project.at[i,"end"] if df_project.at[i,"end"] not in [None, "", " ", np.nan] else end_project 
             except ValueError as err:
-                print(err)
                 df_project.at[i,'start'] = np.nan
                 df_project.at[i,'end'] = np.nan
                 
