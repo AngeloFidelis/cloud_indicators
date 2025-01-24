@@ -6,7 +6,6 @@ from datetime import date
 current_date = date.today()
 year = current_date.year
    
-
 class DataProject:
     def __init__(self) -> None:
         super().__init__()
@@ -16,10 +15,11 @@ class DataProject:
         self.version = os.environ['VERSION']
         self.api_url = os.environ['API_URL']
         self.data_set = os.environ['DATA_SET']
-        self.limit_data = 100
-        # self.table_name_old_projects = ['old_projects', 'old_projects_consultants']
-        # self.table_name_current_projects = ['current_projects', 'current_projects_consultants']
-        # self.table_name_consultants_allocation = ["data_consultants", "data_allocation"]
+        self.limit_data = 500
+        self.regex_old_board = os.environ['DATA_SET']
+        self.regex_actual_board = os.environ['DATA_SET']
+        self.regex_consultant = os.environ['REGEX_CONSULTANT']
+        self.regex_not_in_board = os.environ['REGEX_NOT_IN_BOARD']
 
 class DataMonday(DataProject):
     def __init__(self):
@@ -35,14 +35,14 @@ class DataMonday(DataProject):
     def old_projects(self):
         board_id = None
         for board in self.boards:
-            if re.search(r'old', board['name'].lower()) and not re.search(r'sub', board['name'].lower()):
+            if re.search(f'{self.regex_old_board}', board['name'].lower()) and not re.search(f'{self.regex_not_in_board}', board['name'].lower()):
                 board_id = board['id']
         return board_id
     
     def current_projects(self):
         board_id = None
         for board in self.boards:
-            if re.search(r'opt', board['name'].lower()) and not re.search(r'sub', board['name'].lower()):
+            if re.search(f'{self.regex_actual_board}', board['name'].lower()) and not re.search(f'{self.regex_not_in_board}', board['name'].lower()):
                 board_id = board['id']
         return board_id
     
@@ -51,7 +51,7 @@ class DataMonday(DataProject):
         allocation_current_year = None
         allocation_previous_year = []
         for board in self.boards:
-            if re.search(r'consultor', board['name'].lower()) and not re.search(r'sub', board['name'].lower()):
+            if re.search(f'{self.regex_consultant}', board['name'].lower()) and not re.search(f'{self.regex_not_in_board}', board['name'].lower()):
                 if re.search(f"{year}", board["name"].lower()):
                     allocation_current_year = board['id']
                 else:
