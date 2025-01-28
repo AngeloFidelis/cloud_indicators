@@ -2,6 +2,7 @@ from config import ConfigData
 from request_api import request_consultants
 import re
 import pandas as pd
+import time
 
 config_data = ConfigData()
 
@@ -126,6 +127,7 @@ def load_Data(df_consultants, df_allocation):
     df_allocation.to_csv('./load_test/allocation.csv', index=False)
 
 def consultant_allocation(df_area_consultants):
+    begin = time.time()
     board_id = config_data.boards_id["consultant_allocation"]
     schema_projects, data = request_consultants(board_id)
     new_schema_projects = ["employee_id"] + [
@@ -149,4 +151,6 @@ def consultant_allocation(df_area_consultants):
     modify_type_column(df_consultants,df_allocation)
     
     load_Data(df_consultants, df_allocation)
+    
+    return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"
     

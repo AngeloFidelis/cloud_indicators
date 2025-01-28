@@ -35,6 +35,8 @@ gcloud run deploy export-app \
     REGEX_CURRENT_BOARD='opt', \
     REGEX_CONSULTANT='consultor', \
     REGEX_NOT_IN_BOARD='sub', \
+    SAMPLE_SPREADSHEET_ID='1Ad3OMrTJnkoulvRORS2yFNEBzPeUUjpTXGkXGSaiaOU', \
+    SAMPLE_RANGE_NAME='alocação consultor!A2:O300'
   --cpu=2 \
   --memory=2Gi
   

@@ -14,9 +14,6 @@ app = Flask(__name__) #Inicializa o Flask com o nome do módulo (__main__)
 app.secret_key = os.urandom(12) #Gera uma chave secreta aleatória para proteger os dados de sessões e cookies
 app.folder_static = "static" #Define a pasta onde o CSS está salvo
 
-def catch_board_ids(board):
-  print(*board)
-
 #Cria a rota raiz que será usada para acessar a interface gráfica no browser
 @app.route('/', methods=["get"])
 def index():
@@ -25,19 +22,22 @@ def index():
 #Rota para pegar todos os dados dos projetos antigos
 @app.route('/old_projects', methods=["POST", "GET"])
 def old_projects_function():
-    old_projects()
+    message = old_projects()
+    flash(message)
     return redirect(url_for("index"))
   
 #Rota para pegar todos os dados dos novos projetos
 @app.route('/current_projects', methods=["POST", "GET"])
 def current_projects_function():
-    current_projects()
+    message = current_projects()
+    flash(message)
     return redirect(url_for("index"))
   
 @app.route('/consultant_allocation', methods=["POST", "GET"])
 def consultant_allocation_function():
     df_area_consultants = area_consultants()
-    consultant_allocation(df_area_consultants)
+    message = consultant_allocation(df_area_consultants)
+    flash(message)
     return redirect(url_for("index"))
 
 

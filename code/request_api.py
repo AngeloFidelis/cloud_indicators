@@ -122,7 +122,6 @@ def request_projects(board):
         while cursor is not None:
             data_pagination = next_page(board, cursor,data_limit)
             response_data_pagination = requests.post(url=config_data.api_url, json=data_pagination, headers=headers).json()
-            print(response_data_pagination)
             pagination.append(response_data_pagination['data']['next_items_page']['items'])
             cursor = response_data_pagination['data']['next_items_page']['cursor']
             data_len = response_data_pagination["data"]["next_items_page"]["items"].__len__()

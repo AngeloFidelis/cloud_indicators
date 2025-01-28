@@ -28,4 +28,4 @@ def old_projects():
     df_project, df_subitems = split_cronograma(df_project, df_subitems)
     df_project, df_subitems = format_data(df_project, df_subitems)
     load_data(df_project, df_subitems)
-    print(f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos")
+    return f"Tempo de execução do programa: {round(time.time() - begin, 2)} segundos"

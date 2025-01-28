@@ -16,8 +16,8 @@ class DataProject:
         self.api_url = os.environ['API_URL']
         self.data_set = os.environ['DATA_SET']
         self.limit_data = 500
-        self.regex_old_board = os.environ['DATA_SET']
-        self.regex_actual_board = os.environ['DATA_SET']
+        self.regex_old_board = os.environ['REGEX_OLD_BOARD']
+        self.regex_actual_board = os.environ['REGEX_CURRENT_BOARD']
         self.regex_consultant = os.environ['REGEX_CONSULTANT']
         self.regex_not_in_board = os.environ['REGEX_NOT_IN_BOARD']
         self.spreadsheet_id = os.environ['SAMPLE_SPREADSHEET_ID']
@@ -27,28 +27,30 @@ class DataMonday(DataProject):
     def __init__(self):
         super().__init__()
         self.boards = boards(self.project_id, self.key, self.version, self.api_url)
-        self.old_projects = self.old_projects()
-        self.current_projects = self.current_projects()
-        self.consultants = self.consultants()
+        self.consultants = self.consultants_function()
+        self.old_projects = self.old_projects_function()
+        self.current_projects= self.current_projects_function()
+        
+        
         
     def show_board(self):
         return self.boards
     
-    def old_projects(self):
+    def old_projects_function(self):
         board_id = None
         for board in self.boards:
             if re.search(f'{self.regex_old_board}', board['name'].lower()) and not re.search(f'{self.regex_not_in_board}', board['name'].lower()):
                 board_id = board['id']
         return board_id
     
-    def current_projects(self):
+    def current_projects_function(self):
         board_id = None
         for board in self.boards:
             if re.search(f'{self.regex_actual_board}', board['name'].lower()) and not re.search(f'{self.regex_not_in_board}', board['name'].lower()):
                 board_id = board['id']
         return board_id
     
-    def consultants(self):
+    def consultants_function(self):
         board_id = {}
         allocation_current_year = None
         allocation_previous_year = []
@@ -68,7 +70,7 @@ class ConfigData(DataMonday):
     def __init__(self):
         super().__init__()
         self.boards_id = {
-            "old_projects": self.old_projects,
+            "old_projects": self.old_projects_function(),
             "current_projects": self.current_projects,
             "consultant_allocation": self.consultants
         }
