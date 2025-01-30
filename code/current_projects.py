@@ -1,13 +1,20 @@
 from request_api import request_projects
 import time
 from transform_data import config_data, create_table, create_dataset, rename_coluns_dataset, fill_null_data_formula, split_cronograma, format_data
+import pandas_gbq as gbq
 
 project_list = []
 subitems_list = []
 
 def load_data(df_project, df_subitems):
-    df_project.to_csv(f"./load_test/{config_data.table_name_current_projects[0]}.csv", index=False)
-    df_subitems.to_csv(f"./load_test/{config_data.table_name_current_projects[1]}.csv", index=False)
+    path_table_projects = ".".join([config_data.data_set, config_data.table_name_current_projects[0]])
+    path_table_subitems = ".".join([config_data.data_set, config_data.table_name_current_projects[1]])
+    
+    gbq.to_gbq(df_project, path_table_projects, if_exists='replace')
+    gbq.to_gbq(df_subitems, path_table_subitems, if_exists='replace')
+    
+    # df_project.to_csv(f"./load_test/{config_data.table_name_current_projects[0]}.csv", index=False)
+    # df_subitems.to_csv(f"./load_test/{config_data.table_name_current_projects[1]}.csv", index=False)
 
 def current_projects():
     begin = time.time()

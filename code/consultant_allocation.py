@@ -2,6 +2,7 @@ from config import ConfigData
 from request_api import request_consultants
 import re
 import pandas as pd
+import pandas_gbq as gbq
 import time
 
 config_data = ConfigData()
@@ -136,8 +137,14 @@ def modify_type_column(df_consultants,df_allocation):
     return df_consultants,df_allocation
 
 def load_Data(df_consultants, df_allocation):
-    df_consultants.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[0]}.csv', index=False)
-    df_allocation.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[1]}.csv', index=False)
+    path_table_consultants = ".".join([config_data.data_set, config_data.table_name_consultants_allocation[0]])
+    path_table_allocation = ".".join([config_data.data_set, config_data.table_name_consultants_allocation[1]])
+    
+    gbq.to_gbq(df_consultants, path_table_consultants, if_exists='replace')
+    gbq.to_gbq(df_allocation, path_table_allocation, if_exists='replace')
+    
+    # df_consultants.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[0]}.csv', index=False)
+    # df_allocation.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[1]}.csv', index=False)
     
     
 

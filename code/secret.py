@@ -1,10 +1,4 @@
 from google.cloud import secretmanager
-import os
-from dotenv import load_dotenv
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, ".env"), override=True)
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '../keys/auth_cloud_indicators.json'
 
 #closure
 def secrets(project_id):
