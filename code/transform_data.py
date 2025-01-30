@@ -58,6 +58,8 @@ def rename_coluns_dataset(df_project,df_subitems):
     )
     df_subitems = df_subitems.rename(columns=replace_coluns_name_subitems)
     
+    df_project = df_project.rename(columns={'us$_monthly_consumption': 'us_monthly_consumption'})
+    
     df_project = df_project.rename(columns={'client': 'customer'})
     df_project = df_project.rename(columns={'subelementos': 'roles_needed'})
     
@@ -101,16 +103,30 @@ def fill_null_data_formula(df_project, df_subitems):
             try:
                 start_project = min(cronograma)
                 end_project = max(cronograma)
-                
-                df_project.at[i,'start'] = df_project.at[i,"start"] if df_project.at[i,"start"] not in [None, "", " ", np.nan] else start_project 
-                df_project.at[i,'end'] = df_project.at[i,"end"] if df_project.at[i,"end"] not in [None, "", " ", np.nan] else end_project 
             except ValueError as err:
-                df_project.at[i,'start'] = np.nan
-                df_project.at[i,'end'] = np.nan
-                
-
+                start_project = np.nan
+                end_project = np.nan
+            
             hours = matching_idproject['hours'].dropna().max() #pegar o valor maximo de horas
             cost = matching_idproject['cost'].dropna().sum()
+            
+            #O dataframe de old projects tem as colunas start e end, porém os de projetos atuais não
+            # Essa lógica abaixo é para poder tratar isso
+            if 'start' in df_project and 'end' in df_project:
+                if pd.isna(df_project.at[i, "start"]) or str(df_project.at[i, "start"]).strip() == "":
+                    df_project.at[i, "start"] = start_project
+                
+                if pd.isna(df_project.at[i, "end"]) or str(df_project.at[i, "end"]).strip() == "":
+                    df_project.at[i, "end"] = end_project
+            else:
+                df_project.at[i, 'start'] = pd.to_datetime(start_project)
+                df_project.at[i, 'end'] = pd.to_datetime(end_project)
+                
+                #Reorganiza as colunas deste dataset para ficar igual ao dataset de old projects
+                cols = df_project.columns.tolist()
+                insert_at = cols.index('us_monthly_consumption') + 1
+                cols = cols[:insert_at] + ['start', 'end'] + cols[insert_at:-2]
+                df_project = df_project[cols]
             
             #o 'at' vai selecionar apenas as linhas cujos ids do df_project correspondam aos ids do df_subitems   
             df_project.at[i, 'working_days'] = working_days if working_days else 'N/A'
@@ -146,7 +162,7 @@ def format_data(df_project, df_subitems):
     # Formatar dados do project
     coluns_revenue_projects = df_project.filter(regex='revenue').columns
     coluns_margin_projects = df_project.filter(regex='margin').columns
-    coluns_number_projects = ['cost', 'hours', 'working_days', 'advanced_onboarding', 'us$_monthly_consumption']
+    coluns_number_projects = ['cost', 'hours', 'working_days', 'advanced_onboarding', 'us_monthly_consumption']
     
     for coluns in coluns_margin_projects:
         df_project[coluns] = pd.to_numeric(df_project[coluns], errors='coerce').fillna(0)

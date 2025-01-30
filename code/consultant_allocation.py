@@ -59,6 +59,15 @@ def create_dataset(consultants_list, new_schema_projects,subitems_consultants_li
     
     return df_consultants, df_allocation
 
+def drop_duplicates_in_dataset(df_consultants, df_allocation):
+    
+    # Como há dados iguais nos datasets dos consultores de 2024 e 2025
+    # Essa funcão serve para remover essas duplicadas, preferencialmente as que se repetem nos anos anteriores
+    df_consultants = df_consultants.drop_duplicates('employee_id')
+    df_allocation = df_allocation.drop_duplicates(subset=["employee_id", "allocation"])
+    
+    return df_consultants, df_allocation
+
 def define_area_consultants(df_consultants, df_area_consultants):
     new_dataframe = df_consultants.merge(df_area_consultants[['employee_id','Area']], how='left', on='employee_id')
     new_schema = ['employee_id'] + ['Name'] + ['Roles'] + ['Area'] + [col for col in new_dataframe.columns if col not in ['Name', 'employee_id', 'Area', 'Roles']]
@@ -91,7 +100,6 @@ def modify_type_column(df_consultants,df_allocation):
     columns_cost_projects = df_consultants.filter(regex='cost').columns
     columns_hours_projects = df_consultants.filter(regex='hours').columns
     columns_date_consultants = ["free_after", "ac_start", "ac_termination"]
-    columns_object_consultants = df_consultants.select_dtypes(include='object').columns
     
     for coluns in columns_cost_projects:
         df_consultants[coluns] = pd.to_numeric(df_consultants[coluns], errors='coerce').fillna(0)
@@ -102,6 +110,8 @@ def modify_type_column(df_consultants,df_allocation):
         
     df_consultants['presales_allocation'] = pd.to_numeric(df_consultants['presales_allocation']).fillna(0)
     
+    columns_object_consultants = df_consultants.select_dtypes(include='object').columns
+    
     for coluns in columns_object_consultants:
         df_consultants[coluns] = df_consultants[coluns].map(
             lambda x: str(x) if x not in [None, '', ' '] else 'N/A'
@@ -110,17 +120,20 @@ def modify_type_column(df_consultants,df_allocation):
     # Modificar o tipo das colunas do dataframe de alocação
     columns_date_allocation = ["start_date", "release_date"]
     columns_number_allocation = ['alocation', 'days', 'hour_cost', 'us_cost']
-    colunas_object_allocation = df_allocation.select_dtypes(include='object').columns
     
     df_allocation[columns_number_allocation] = df_allocation[columns_number_allocation].apply(pd.to_numeric).fillna(0)
 
     for coluns in columns_date_allocation:
         df_allocation[coluns] = pd.to_datetime(df_allocation[coluns], errors='coerce', format="%Y-%m-%d")
     
+    colunas_object_allocation = df_allocation.select_dtypes(include='object').columns
+    
     for coluns in colunas_object_allocation:
         df_allocation[coluns] = df_allocation[coluns].map(
             lambda x: str(x) if x not in [None, '', ' '] else 'N/A'
         )
+    
+    return df_consultants,df_allocation
 
 def load_Data(df_consultants, df_allocation):
     df_consultants.to_csv('./load_test/consultants.csv', index=False)
@@ -143,12 +156,11 @@ def consultant_allocation(df_area_consultants):
     
     extract_data_api(data, consultants_list,subitems_consultants_list)
     df_consultants, df_allocation = create_dataset(consultants_list, new_schema_projects,subitems_consultants_list, schema_subitems_consultants)
+    df_consultants, df_allocation = drop_duplicates_in_dataset(df_consultants, df_allocation)
     
-    df_consultants = df_consultants.drop_duplicates('employee_id')
-    df_allocation = df_allocation.drop_duplicates(subset=["employee_id", "allocation"])
     df_consultants = define_area_consultants(df_consultants, df_area_consultants)
     df_consultants,df_allocation = rename_coluns_dataset(df_consultants,df_allocation)
-    modify_type_column(df_consultants,df_allocation)
+    df_consultants,df_allocation = modify_type_column(df_consultants,df_allocation)
     
     load_Data(df_consultants, df_allocation)
     
