@@ -16,6 +16,9 @@ class DataProject:
         self.api_url = os.environ['API_URL']
         self.data_set = os.environ['DATA_SET']
         self.limit_data = 500
+        self.table_name_old_projects = ['old_projects', 'old_projects_consultants']
+        self.table_name_current_projects = ['current_projects', 'current_projects_consultants']
+        self.table_name_consultants_allocation = ["data_consultants", "data_allocation"]
         self.regex_old_board = os.environ['REGEX_OLD_BOARD']
         self.regex_actual_board = os.environ['REGEX_CURRENT_BOARD']
         self.regex_consultant = os.environ['REGEX_CONSULTANT']

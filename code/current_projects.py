@@ -6,8 +6,8 @@ project_list = []
 subitems_list = []
 
 def load_data(df_project, df_subitems):
-    df_project.to_csv(f"./load_test/df_projects_actual.csv", index=False)
-    df_subitems.to_csv(f"./load_test/df_subitems_actual.csv", index=False)
+    df_project.to_csv(f"./load_test/{config_data.table_name_current_projects[0]}.csv", index=False)
+    df_subitems.to_csv(f"./load_test/{config_data.table_name_current_projects[1]}.csv", index=False)
 
 def current_projects():
     begin = time.time()

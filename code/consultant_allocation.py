@@ -136,8 +136,10 @@ def modify_type_column(df_consultants,df_allocation):
     return df_consultants,df_allocation
 
 def load_Data(df_consultants, df_allocation):
-    df_consultants.to_csv('./load_test/consultants.csv', index=False)
-    df_allocation.to_csv('./load_test/allocation.csv', index=False)
+    df_consultants.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[0]}.csv', index=False)
+    df_allocation.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[1]}.csv', index=False)
+    
+    
 
 def consultant_allocation(df_area_consultants):
     begin = time.time()
