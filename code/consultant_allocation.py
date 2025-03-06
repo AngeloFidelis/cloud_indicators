@@ -47,8 +47,8 @@ def extract_data_api(data, consultants_list,subitems_consultants_list):
         if all_data_allocation_by_consultants.__len__() != 0:
             subitems_consultants_list.append(all_data_allocation_by_consultants)
 
-def create_dataset(consultants_list, new_schema_projects,subitems_consultants_list, schema_subitems_consultants):
-    df_consultants = pd.DataFrame(consultants_list, columns=new_schema_projects)
+def create_dataset(consultants_list, new_schema_consultants,subitems_consultants_list, schema_subitems_consultants):
+    df_consultants = pd.DataFrame(consultants_list, columns=new_schema_consultants)
     
     subitems_consultants_list = [
         items 
@@ -69,7 +69,8 @@ def drop_duplicates_in_dataset(df_consultants, df_allocation):
     return df_consultants, df_allocation
 
 def define_area_consultants(df_consultants, df_area_consultants):
-    new_dataframe = df_consultants.merge(df_area_consultants[['employee_id','Area']], how='left', on='employee_id')
+    new_dataframe = df_consultants.merge(df_area_consultants[['employee_id','Name','Area']], how='left', on=['employee_id','Name'])
+    print(new_dataframe)
     new_schema = ['employee_id'] + ['Name'] + ['Roles'] + ['Area'] + [col for col in new_dataframe.columns if col not in ['Name', 'employee_id', 'Area', 'Roles']]
     new_dataframe = new_dataframe[new_schema]
     return new_dataframe
@@ -138,28 +139,23 @@ def modify_type_column(df_consultants,df_allocation):
 def load_Data(df_consultants, df_allocation):
     df_consultants.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[0]}.csv', index=False)
     df_allocation.to_csv(f'./load_test/{config_data.table_name_consultants_allocation[1]}.csv', index=False)
-    
-    
-
+      
 def consultant_allocation(df_area_consultants):
     begin = time.time()
     board_id = config_data.boards_id["consultant_allocation"]
-    schema_projects, data = request_consultants(board_id)
-    new_schema_projects = ["employee_id"] + [
+    data, schema_consultants, schema_subitems_consultants = request_consultants(board_id)
+    new_schema_consultants = ["employee_id"] + [
         column
-        for column in schema_projects
+        for column in schema_consultants
         if not re.search(r'.*id.*',column.lower()) and column.lower() != 'subelementos'
     ]
     
     for item in data: #impede que os dados sejam armazenados como uma lista dentro de outra lista
         all_data.append(item)
-    
-    schema_subitems_consultants = ['employee_id','allocation','Status', 'Start Date', 'Release Date', 'Alocation', 'Days', 'Hour Cost', 'US$ Cost']
-    
+        
     extract_data_api(data, consultants_list,subitems_consultants_list)
-    df_consultants, df_allocation = create_dataset(consultants_list, new_schema_projects,subitems_consultants_list, schema_subitems_consultants)
+    df_consultants, df_allocation = create_dataset(consultants_list, new_schema_consultants,subitems_consultants_list, schema_subitems_consultants)
     df_consultants, df_allocation = drop_duplicates_in_dataset(df_consultants, df_allocation)
-    
     df_consultants = define_area_consultants(df_consultants, df_area_consultants)
     df_consultants,df_allocation = rename_coluns_dataset(df_consultants,df_allocation)
     df_consultants,df_allocation = modify_type_column(df_consultants,df_allocation)
