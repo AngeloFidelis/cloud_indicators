@@ -5,6 +5,10 @@ import numpy as np
 
 config_data = ConfigData()
 
+old_name_columns_projects, new_name_columns_projects = config_data.NAME_SPECIFIC_COLUMNS_PROJECT.split(' - ')
+old_name_columns_subitems, new_name_columns_subitems = config_data.NAME_SPECIFIC_COLUMNS_SUBITEMS.split(' - ')
+
+
 def create_table(data, project_list, subitems_list):
     ...
     for items in data:
@@ -56,15 +60,18 @@ def rename_coluns_dataset(df_project,df_subitems):
             [col.lower().replace(" ","_").replace("-_","") for col in df_subitems.columns] #usa o nome dome das colunas como valor
         )
     )
+    # for 
     df_subitems = df_subitems.rename(columns=replace_coluns_name_subitems)
     
-    df_project = df_project.rename(columns={'us$_monthly_consumption': 'us_monthly_consumption'})
+    for i,data in enumerate(old_name_columns_projects.split(', ')):
+        df_project = df_project.rename(columns={data: new_name_columns_projects.split(', ')[i]})
     
-    df_project = df_project.rename(columns={'client': 'customer'})
-    df_project = df_project.rename(columns={'subelementos': 'roles_needed'})
-    
-    df_subitems = df_subitems.rename(columns={'consultor': 'consultant'})
-    df_subitems = df_subitems.rename(columns={'name': 'role'})
+    for i,data in enumerate(old_name_columns_subitems.split(', ')):
+        print(data, new_name_columns_subitems.split(', ')[i])
+        df_subitems = df_subitems.rename(columns={data: new_name_columns_subitems.split(', ')[i]})
+        
+    # print(df_subitems.dtypes)
+
 
     return df_project,df_subitems
 
@@ -124,18 +131,19 @@ def fill_null_data_formula(df_project, df_subitems):
                 
                 #Reorganiza as colunas deste dataset para ficar igual ao dataset de old projects
                 cols = df_project.columns.tolist()
-                insert_at = cols.index('us_monthly_consumption') + 1
+                insert_at = cols.index('status') + 1
                 cols = cols[:insert_at] + ['start', 'end'] + cols[insert_at:-2]
                 df_project = df_project[cols]
             
             #o 'at' vai selecionar apenas as linhas cujos ids do df_project correspondam aos ids do df_subitems   
             df_project.at[i, 'working_days'] = working_days if working_days else 'N/A'
             df_project.at[i, 'hours'] = hours if hours else '0'
-            df_project.at[i, 'cost'] = cost if cost else '0'
+            df_project.at[i, 'total_cost'] = cost if cost else '0'
     
     ##  ------------------------------ Formula para calcular a margem ------------------------------
-    df_project['margin'] = df_project.apply(
-        lambda df: (pd.to_numeric(df['revenue'], errors='coerce') - pd.to_numeric(df['cost'], errors='coerce')) / pd.to_numeric(df['revenue'].replace("0",'1'), errors='coerce'),
+    print(df_project.dtypes)
+    df_project['total_margin'] = df_project.apply(
+        lambda df: (pd.to_numeric(df['total_revenue'], errors='coerce') - pd.to_numeric(df['total_cost'], errors='coerce')) / pd.to_numeric(df['total_revenue'].replace("0",'1'), errors='coerce'),
         axis=1
     )
     
@@ -162,18 +170,18 @@ def format_data(df_project, df_subitems):
     # Formatar dados do project
     coluns_revenue_projects = df_project.filter(regex='revenue').columns
     coluns_margin_projects = df_project.filter(regex='margin').columns
-    coluns_number_projects = ['cost', 'hours', 'working_days', 'advanced_onboarding', 'us_monthly_consumption']
+    coluns_number_projects = ['total_cost', 'hours', 'working_days', 'advanced_onboarding', 'us_monthly_consumption']
     
     for coluns in coluns_margin_projects:
         df_project[coluns] = pd.to_numeric(df_project[coluns], errors='coerce').fillna(0)
-        df_project["margin"] = df_project["margin"].apply(lambda x: round(x,4)) #transforma a margin em porcentagem
+        df_project["total_margin"] = df_project["total_margin"].apply(lambda x: round(x,4)) #transforma a margin em porcentagem
     for coluns in coluns_revenue_projects:
         df_project[coluns] = pd.to_numeric(df_project[coluns], errors='coerce').fillna(0)
     
     for coluns in coluns_number_projects:
         df_project[coluns] = pd.to_numeric(df_project[coluns], errors='coerce').fillna(0)
     
-    df_project["cost"] = df_project["cost"].apply(lambda x: round(x,2))
+    df_project["total_cost"] = df_project["total_cost"].apply(lambda x: round(x,2))
     df_project["start"] = pd.to_datetime(df_project["start"], errors='coerce', format="%Y-%m-%d")
     df_project["end"] = pd.to_datetime(df_project["end"], errors='coerce', format="%Y-%m-%d")
     

@@ -20,7 +20,7 @@ def load_data(df_project, df_subitems):
 def old_projects():
     begin = time.time()
     board_id = config_data.boards_id["old_projects"]
-    data, schema_projects = request_projects(board_id)
+    data, schema_projects, schema_subitems = request_projects(board_id)
     new_schema_project = ['id_project', 'opt', 'client'] + [
         'project_name' if header == 'Name' else header and 'US$ Monthly consumption' if header == 'US$ Monthly consuption' else header
         for header in schema_projects
