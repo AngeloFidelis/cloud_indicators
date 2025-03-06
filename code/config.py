@@ -25,6 +25,8 @@ class DataProject:
         self.regex_not_in_board = os.environ['REGEX_NOT_IN_BOARD']
         self.spreadsheet_id = os.environ['SAMPLE_SPREADSHEET_ID']
         self.range_name = os.environ['SAMPLE_RANGE_NAME']
+        self.NAME_SPECIFIC_COLUMNS_PROJECT = os.environ["NAME_SPECIFIC_COLUMNS_PROJECT"]
+        self.NAME_SPECIFIC_COLUMNS_SUBITEMS = os.environ["NAME_SPECIFIC_COLUMNS_SUBITEMS"]
 
 class DataMonday(DataProject):
     def __init__(self):

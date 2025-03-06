@@ -108,12 +108,39 @@ def request_projects(board):
     data_len = response_data["data"]["boards"][0]["items_page"]["items"].__len__()
     cursor = response_data['data']['boards'][0]["items_page"]['cursor']
     pagination = []
+    schema_subitems = []
     
     schema_projects = [
         items["title"]
         for items
         in response_data['data']['boards'][0]['columns']
     ]
+    subitems = [
+        items['subitems']
+        for items
+        in response_data['data']['boards'][0]['items_page']['items']
+    ]
+    
+    #interators
+    subitems_iterators = subitems.__iter__()
+    
+    while True:
+        try:
+            validate_data_is_empty = subitems_iterators.__next__()
+            # valida se o subitems é ou não vazio
+            if validate_data_is_empty.__len__() != 0:
+                columns_name = [
+                    item['column']['title']
+                    for item
+                    in validate_data_is_empty[0]['column_values']
+                ]
+                schema_subitems = [
+                    'id_project', 'name'
+                ] + columns_name
+                #após a primeira ocorrencia, sair do loop
+                break
+        except:
+            break
     
     print(data_len)
     # quando o cursor for nulo, quer dizer que não há mais dados para paginar, fazendo o loop terminar
@@ -134,9 +161,9 @@ def request_projects(board):
             for item
             in items
         ]
-        return all_data, schema_projects
+        return all_data, schema_projects, schema_subitems
     else:
-        return response_data["data"]["boards"][0]["items_page"]["items"], schema_projects
+        return response_data["data"]["boards"][0]["items_page"]["items"], schema_projects, schema_subitems
     # return response_data,schema_projects
     
 def request_consultants(board):
