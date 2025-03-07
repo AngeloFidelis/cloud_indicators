@@ -64,11 +64,8 @@ https://cloud.google.com/iam/docs/service-accounts-create?hl=pt-br
 
 gcloud run deploy export-app \
   --image us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY_NAME/$CONTAINER_NAME:$CONTAINER_VERSION \
-  --image us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY_NAME/$CONTAINER_NAME:$CONTAINER_VERSION \
   --region us-central1 \
   --service-account=$SERVICE_ACOUNT_NAME@$PROJECT_ID.iam.gserviceaccount.com \
   --platform managed \
   --allow-unauthenticated \
-  --set-env-vars PROJECT_ID=lookerstudylab,KEY=api_key,SERVICE_ACOUNT=key-api-sheet,VERSION=latest,API_URL=https://api.monday.com/v2,DATA_SET=cloud_indicators,REGEX_OLD_BOARD='old',REGEX_CURRENT_BOARD='opt',REGEX_CONSULTANT='consultor',REGEX_NOT_IN_BOARD='sub',SAMPLE_SPREADSHEET_ID='1Ad3OMrTJnkoulvRORS2yFNEBzPeUUjpTXGkXGSaiaOU',SAMPLE_RANGE_NAME='alocação consultor!A2:O300'
-  --set-env-vars PROJECT_ID=lookerstudylab,KEY=api_key,SERVICE_ACOUNT=key-api-sheet,VERSION=latest,API_URL=https://api.monday.com/v2,DATA_SET=cloud_indicators,REGEX_OLD_BOARD='old',REGEX_CURRENT_BOARD='opt',REGEX_CONSULTANT='consultor',REGEX_NOT_IN_BOARD='sub',SAMPLE_SPREADSHEET_ID='1Ad3OMrTJnkoulvRORS2yFNEBzPeUUjpTXGkXGSaiaOU',SAMPLE_RANGE_NAME='alocação consultor!A2:O300'
-
+  --env-vars-file=./env.yaml
