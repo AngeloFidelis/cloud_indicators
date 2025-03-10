@@ -6,8 +6,8 @@ config_data = ConfigData() # Cria uma instância da classe 'ConfigData' que carr
 request_key = secrets(config_data.project_id) #Chama a função 'secrets' passando o 'project_id' da configuração.
 api_key = request_key('api_key', 'latest') # Obtém o nome do 'secret' para a api_key
 headers = {"Authorization" : api_key}
-# data_limit = config_data.limit_data
-data_limit = 250
+data_limit = config_data.limit_data
+# data_limit = 20
 
 def get_items_board(board,limit):
     query = """ 
@@ -126,7 +126,7 @@ def request_consultants(board):
         if key == 'current_year':
             response_data = request(values)
             schema_consultants, schema_subitems = create_schema(response_data)
-            schema_subitems = ['employee_id', 'allocation'] + schema_subitems
+            schema_subitems = ['employee_id', 'project_name'] + schema_subitems
             
             data_len = response_data["data"]["boards"][0]["items_page"]["items"].__len__()
             cursor = response_data['data']['boards'][0]["items_page"]['cursor']

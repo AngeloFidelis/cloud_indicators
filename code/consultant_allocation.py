@@ -64,7 +64,7 @@ def drop_duplicates_in_dataset(df_consultants, df_allocation):
     # Como há dados iguais nos datasets dos consultores de 2024 e 2025
     # Essa funcão serve para remover essas duplicadas, preferencialmente as que se repetem nos anos anteriores
     df_consultants = df_consultants.drop_duplicates('employee_id')
-    df_allocation = df_allocation.drop_duplicates(subset=["employee_id", "allocation"])
+    df_allocation = df_allocation.drop_duplicates(subset=["employee_id"])
     
     return df_consultants, df_allocation
 
